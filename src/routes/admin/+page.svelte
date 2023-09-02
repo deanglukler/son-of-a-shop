@@ -1,39 +1,14 @@
 <script lang="ts">
-	import {
-		GoogleAuthProvider,
-		getRedirectResult,
-		onAuthStateChanged,
-		signInWithRedirect,
-		signOut
-	} from 'firebase/auth';
+	import { onAuthStateChanged } from 'firebase/auth';
 	import { onMount } from 'svelte';
-	import { initFiBase, auth, storage } from '$lib/fiBase';
+	import { initFiBase, auth, database } from '$lib/fiBase';
 	import { userUid } from '$lib/stores';
-	import { deleteObject, getDownloadURL, listAll, ref, uploadBytes } from 'firebase/storage';
 	import _ from 'lodash';
 
-	import 'toastify-js/src/toastify.css';
+	import { Timestamp, collection, doc, getDocs, setDoc } from 'firebase/firestore';
 
-	const folderName = Date.now();
-
-	async function handleImageUploaderChange() {
-		const fileInput = document.getElementById('image-uploader');
-		if (fileInput?.files?.[0]) {
-			const file = fileInput?.files?.[0] as File;
-			const name = file.name;
-			const fileName = `junk/${folderName}/${name}`;
-			const storageRef = ref(storage, fileName);
-			const snapshot = await uploadBytes(storageRef, file);
-			fileInput.value = null;
-		}
-	}
-
-	type FullPath = string;
-	type SavedImg = { fullPath: FullPath; url: string };
-	let savedImgs: SavedImg[] = [];
-	let deleteQueue: FullPath[] = [];
-
-	onMount(() => {
+	let adsData: any[] = [];
+	onMount(async () => {
 		initFiBase();
 
 		onAuthStateChanged(auth, (user) => {
@@ -47,45 +22,29 @@
 			}
 		});
 
-		setInterval(() => {
-			const folderStorageRef = ref(storage, `junk/${folderName}`);
-			listAll(folderStorageRef).then(async (res) => {
-				const nextUrls: SavedImg[] = [];
-				for (const r of res.items) {
-					const dlUrl = await getDownloadURL(r);
-					nextUrls.push({ fullPath: r.fullPath, url: dlUrl });
-					console.log(r.fullPath);
-					if (_.includes(deleteQueue, r.fullPath)) {
-						console.log('deleting ' + r.fullPath);
-						await deleteObject(r);
-						deleteQueue = deleteQueue.filter((x) => x === r.fullPath);
-					}
-				}
-				savedImgs = nextUrls;
-			});
-		}, 4000);
+		const ads = await getDocs(collection(database, 'ads'));
+		const nxtAdsData: any[] = [];
+		ads.forEach((a) => {
+			nxtAdsData.push({ id: a.id, ...a.data() });
+		});
+		adsData = [...nxtAdsData];
 	});
 
-	function handleDeleteImgClick(fullPath: string) {
-		deleteQueue = [...deleteQueue, fullPath];
-		console.log(deleteQueue);
+	async function handleNewAdOnClick() {
+		const ts = Timestamp.now();
+		const newAd = { description: '', title: '', createdAt: ts, updatedAt: ts };
+		const newAdRef = doc(collection(database, 'ads'));
+		await setDoc(newAdRef, newAd);
 	}
 </script>
 
 <h1>Admin</h1>
 
-<h3>Image Uploader</h3>
-<input
-	on:change={handleImageUploaderChange}
-	id="image-uploader"
-	type="file"
-	accept="image/jpg,image/png"
-/>
+<h2>Ads</h2>
+<ul>
+	{#each adsData as ad}
+		<li><a href={`edit/${ad.id}`}>{ad.title}</a></li>
+	{/each}
+</ul>
 
-{#each savedImgs as img}
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
-	<div on:click={() => handleDeleteImgClick(img.fullPath)}>
-		<img src={img.url} height="100" alt="wtf-is-up" />
-	</div>
-{/each}
+<button on:click={handleNewAdOnClick}>new ad</button>
