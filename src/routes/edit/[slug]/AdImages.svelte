@@ -14,6 +14,7 @@
 
 	onMount(() => {
 		initFiBase();
+		updateImgs();
 	});
 
 	async function handleImageUploaderChange() {
@@ -28,11 +29,12 @@
 			const fileName = `junk/${folderName}/${name}`;
 			const storageRef = ref(storage, fileName);
 			const snapshot = await uploadBytes(storageRef, file);
+			debounceUpdateImgs();
 			fileInput.value = null;
 		}
 	}
 
-	setInterval(() => {
+	function updateImgs() {
 		const folderStorageRef = ref(storage, `junk/${folderName}`);
 		listAll(folderStorageRef).then(async (res) => {
 			const nextUrls: SavedImg[] = [];
@@ -44,14 +46,18 @@
 					console.log('deleting ' + r.fullPath);
 					await deleteObject(r);
 					deleteQueue = deleteQueue.filter((x) => x === r.fullPath);
+					updateImgs();
 				}
 			}
 			savedImgs = nextUrls;
 		});
-	}, 3000);
+	}
+
+	const debounceUpdateImgs = _.debounce(updateImgs, 1500);
 
 	function handleDeleteImgClick(fullPath: string) {
 		deleteQueue = [...deleteQueue, fullPath];
+		updateImgs();
 	}
 </script>
 
