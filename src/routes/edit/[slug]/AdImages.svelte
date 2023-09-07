@@ -3,9 +3,7 @@
 	import { initFiBase, storage } from '$lib/fiBase';
 	import { deleteObject, getDownloadURL, listAll, ref, uploadBytes } from 'firebase/storage';
 	import _ from 'lodash';
-
-	type FullPath = string;
-	type SavedImg = { fullPath: FullPath; url: string };
+	import type { SavedImg, FullPath } from '$lib/types';
 
 	let savedImgs: SavedImg[] = [];
 	let deleteQueue: FullPath[] = [];
