@@ -10,6 +10,8 @@ export type AdParsed = {
 	updatedAtMilis: number;
 };
 
+export type AdParsedWithId = AdParsed & { id: string };
+
 export type PartialWithFiBaseTimestamps<T> = Partial<T> & {
 	createdAt: Timestamp;
 	updatedAt: Timestamp;

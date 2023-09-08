@@ -4,7 +4,7 @@ import { database, storage } from '../../../lib/fiBaseAdmin';
 import { safelyParseAd } from '../../../lib/safelyParseAd';
 import { getImgUrlAndDims } from '../../../lib/getImgUrlAndDims';
 
-/** @type {import('./$types').PageServerLoad} */
+/** @type {import('./$types').LayoutServerLoad} */
 export async function load({ params }) {
 	const db = database;
 	const slug = params.slug;
