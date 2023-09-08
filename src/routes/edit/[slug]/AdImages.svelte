@@ -4,6 +4,8 @@
 	import { deleteObject, getDownloadURL, listAll, ref, uploadBytes } from 'firebase/storage';
 	import _ from 'lodash';
 	import type { SavedImg, FullPath } from '$lib/types';
+	import Compressor from 'compressorjs';
+	import { getImgUrlAndDims } from '../../../lib/getImgUrlAndDims';
 
 	let savedImgs: SavedImg[] = [];
 	let deleteQueue: FullPath[] = [];
@@ -15,6 +17,47 @@
 		updateImgs();
 	});
 
+	function compressImg(file: File) {
+		return new Promise<File>((res, rej) => {
+			new Compressor(file, {
+				quality: 0.6,
+				width: 700,
+
+				success(result) {
+					res(result as File);
+				},
+				error(err) {
+					rej(err);
+				}
+			});
+		});
+	}
+
+	function getImageDimensions(imgFile: File) {
+		return new Promise<{ width: number; height: number }>((res) => {
+			const img = new Image();
+			img.src = URL.createObjectURL(imgFile);
+
+			img.onload = function () {
+				const width = img.width;
+				const height = img.height;
+				res({ width, height });
+			};
+		});
+	}
+
+	function renameImageWithDimensions(
+		originalFileName: string,
+		width: number,
+		height: number
+	): string {
+		const fileExtension = originalFileName.split('.').pop() || '';
+		const fileNameWithoutExtension = originalFileName.replace(`.${fileExtension}`, '');
+		const newFileName = `${fileNameWithoutExtension}_DIMENSIONS_${width}x${height}.${fileExtension}`;
+
+		return newFileName;
+	}
+
 	async function handleImageUploaderChange() {
 		const fileInput = document.getElementById('image-uploader') as HTMLFormElement;
 		if (!fileInput) {
@@ -23,10 +66,12 @@
 
 		if (fileInput?.files?.[0]) {
 			const file = fileInput?.files?.[0] as File;
-			const name = file.name;
+			const compressedFile = await compressImg(file);
+			const { width, height } = await getImageDimensions(compressedFile);
+			const name = renameImageWithDimensions(file.name, width, height);
 			const fileName = `junk/${folderName}/${name}`;
 			const storageRef = ref(storage, fileName);
-			const snapshot = await uploadBytes(storageRef, file);
+			const snapshot = await uploadBytes(storageRef, compressedFile);
 			debounceUpdateImgs();
 			fileInput.value = null;
 		}
@@ -38,7 +83,7 @@
 			const nextUrls: SavedImg[] = [];
 			for (const r of res.items) {
 				const dlUrl = await getDownloadURL(r);
-				nextUrls.push({ fullPath: r.fullPath, url: dlUrl });
+				nextUrls.push({ fullPath: r.fullPath, ...getImgUrlAndDims(dlUrl) });
 				console.log(r.fullPath);
 				if (_.includes(deleteQueue, r.fullPath)) {
 					console.log('deleting ' + r.fullPath);
@@ -53,7 +98,10 @@
 
 	const debounceUpdateImgs = _.debounce(updateImgs, 1500);
 
-	function handleDeleteImgClick(fullPath: string) {
+	function handleDeleteImgClick(fullPath: string | undefined) {
+		if (!fullPath) {
+			throw new Error('cannot delete image if no full path is given');
+		}
 		deleteQueue = [...deleteQueue, fullPath];
 		updateImgs();
 	}
@@ -71,6 +119,6 @@
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div on:click={() => handleDeleteImgClick(img.fullPath)}>
-		<img src={img.url} height="100" alt="wtf-is-up" />
+		<img src={img.url} width={150} height={150 * (img.height / img.width)} alt="wtf-is-up" />
 	</div>
 {/each}

@@ -1,25 +1,8 @@
-import type { Timestamp } from 'firebase-admin/firestore';
 import { getDownloadURL } from 'firebase-admin/storage';
-import type { SavedImg } from '../../../lib/types';
+import type { AdParsed, PartialWithFiBaseTimestamps, SavedImg } from '../../../lib/types';
 import { database, storage } from '../../../lib/fiBaseAdmin';
-
-type AdParsed = {
-	title: string;
-	description: string;
-	createdAtMilis: number;
-	updatedAtMilis: number;
-};
-
-type PartialWithFiBaseTimestamps<T> = Partial<T> & { createdAt: Timestamp; updatedAt: Timestamp };
-
-function safelyParseAd(firestoreAd: PartialWithFiBaseTimestamps<AdParsed>): AdParsed {
-	return {
-		title: firestoreAd.title || '',
-		description: firestoreAd.description || '',
-		createdAtMilis: firestoreAd.createdAt.toMillis(),
-		updatedAtMilis: firestoreAd.updatedAt.toMillis()
-	};
-}
+import { safelyParseAd } from '../../../lib/safelyParseAd';
+import { getImgUrlAndDims } from '../../../lib/getImgUrlAndDims';
 
 /** @type {import('./$types').PageServerLoad} */
 export async function load({ params }) {
@@ -40,9 +23,10 @@ export async function load({ params }) {
 	for (const file of files) {
 		try {
 			const dlUrl = await getDownloadURL(file);
+
 			adImgs.push({
 				fullPath: file.name,
-				url: dlUrl
+				...getImgUrlAndDims(dlUrl)
 			});
 		} catch (error) {
 			console.log('there was an error getting download url for file ' + file.baseUrl);
