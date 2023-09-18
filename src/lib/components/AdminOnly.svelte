@@ -11,6 +11,7 @@
 	import { doc, getDoc } from 'firebase/firestore';
 	import { onMount } from 'svelte';
 	import toast from '$lib/toast';
+	import Button from './Button.svelte';
 
 	let handleSignIn = () => {};
 	let handleSignOut = () => {};
@@ -93,10 +94,12 @@
 	<h2>not authorized</h2>
 {/if}
 
-{#if $userUid}
-	<button on:click={handleSignOut}>sign out</button>
-{:else}
-	<button on:click={handleSignIn}>Sign in</button>
-{/if}
+<div class="flex justify-end items-start h-40 flex-col">
+	{#if $userUid}
+		<Button on:click={handleSignOut}>sign out</Button>
+	{:else}
+		<Button on:click={handleSignIn}>Sign in</Button>
+	{/if}
 
-<h3>{$userUid}</h3>
+	<h3>{$userUid}</h3>
+</div>

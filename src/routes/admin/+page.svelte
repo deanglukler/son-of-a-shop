@@ -6,6 +6,7 @@
 	import _ from 'lodash';
 
 	import { Timestamp, collection, doc, getDocs, setDoc } from 'firebase/firestore';
+	import Button from '../../lib/components/Button.svelte';
 
 	let adsData: any[] = [];
 	onMount(async () => {
@@ -32,9 +33,10 @@
 
 	async function handleNewAdOnClick() {
 		const ts = Timestamp.now();
-		const newAd = { description: '', title: '', createdAt: ts, updatedAt: ts };
+		const newAd = { description: '', title: '', price: '', createdAt: ts, updatedAt: ts };
 		const newAdRef = doc(collection(database, 'ads'));
 		await setDoc(newAdRef, newAd);
+		window.location.href = `/edit/${newAdRef.id}`;
 	}
 </script>
 
@@ -47,4 +49,4 @@
 	{/each}
 </ul>
 
-<button on:click={handleNewAdOnClick}>new ad</button>
+<Button onClick={handleNewAdOnClick}>New Ad</Button>

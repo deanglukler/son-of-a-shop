@@ -107,7 +107,6 @@
 	}
 </script>
 
-<h3>Image Uploader</h3>
 <input
 	on:change={handleImageUploaderChange}
 	id="image-uploader"

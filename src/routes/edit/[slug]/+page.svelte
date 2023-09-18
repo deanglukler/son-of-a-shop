@@ -37,12 +37,25 @@
 
 <AdminOnly>
 	{#if ad}
-		<form on:change={debounceFormChange}>
-			<label for="title">Title</label>
-			<input name="title" type="text" bind:value={ad.title} />
-			<label for="description">Description</label>
-			<textarea name="description" bind:value={ad.description} />
+		<form on:change={debounceFormChange} class="max-w-md">
+			<h3 class="heading-grey mb-3">Ad Details</h3>
+			<div class="flex flex-col gap-3">
+				<input
+					name="title"
+					type="text"
+					bind:value={ad.title}
+					placeholder="Title"
+					class="border p-2"
+				/>
+				<textarea
+					name="description"
+					placeholder="Description"
+					bind:value={ad.description}
+					class="border h-40 p-2"
+				/>
+			</div>
 		</form>
+		<h3 class="heading-grey my-3">Images</h3>
 		<AdImages folderName={ad.id} />
 	{/if}
 </AdminOnly>

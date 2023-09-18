@@ -1,0 +1,5 @@
+.heading-grey {
+	@apply font-semibold;
+	@apply text-neutral-500;
+	@apply text-xl;
+}
