@@ -1,6 +1,6 @@
 import type { AdParsed, PartialWithFiBaseTimestamps } from './types';
 
-export function safelyParseAd(firestoreAd: PartialWithFiBaseTimestamps<AdParsed>): AdParsed {
+export function safelyParseAd(firestoreAd: PartialWithFiBaseTimestamps<AdParsed> | any): AdParsed {
 	return {
 		title: firestoreAd.title || '',
 		description: firestoreAd.description || '',

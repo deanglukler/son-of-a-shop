@@ -1,5 +1,10 @@
-.heading-grey {
+.heading-gray {
 	@apply font-semibold;
 	@apply text-neutral-500;
 	@apply text-xl;
+}
+
+.hoverable-border {
+	@apply border;
+	@apply hover:border-neutral-400;
 }

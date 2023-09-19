@@ -12,7 +12,6 @@
 
 	let isMounted = false;
 	onMount(async () => {
-		const asdf = page;
 		initFiBase();
 		const slug = $page.params.slug;
 		const adDoc = doc(database, `ads/${slug}`);
@@ -25,6 +24,7 @@
 		}
 		isMounted = true;
 	});
+
 	const debounceFormChange = _.debounce(() => {
 		if (!isMounted) return;
 		const adDoc = doc(database, `ads/${$page.params.slug}`);
@@ -38,24 +38,31 @@
 <AdminOnly>
 	{#if ad}
 		<form on:change={debounceFormChange} class="max-w-md">
-			<h3 class="heading-grey mb-3">Ad Details</h3>
+			<h3 class="heading-gray mb-3">Ad Details</h3>
 			<div class="flex flex-col gap-3">
 				<input
 					name="title"
 					type="text"
 					bind:value={ad.title}
 					placeholder="Title"
-					class="border p-2"
+					class="hoverable-border rounded-sm p-2"
+				/>
+				<input
+					name="price"
+					type="text"
+					bind:value={ad.price}
+					placeholder="Price"
+					class="hoverable-border rounded-sm p-2"
 				/>
 				<textarea
 					name="description"
 					placeholder="Description"
 					bind:value={ad.description}
-					class="border h-40 p-2"
+					class="hoverable-border rounded-sm h-40 p-2"
 				/>
 			</div>
 		</form>
-		<h3 class="heading-grey my-3">Images</h3>
+		<h3 class="heading-gray my-3">Images</h3>
 		<AdImages folderName={ad.id} />
 	{/if}
 </AdminOnly>
