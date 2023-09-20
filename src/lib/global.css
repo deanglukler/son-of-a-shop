@@ -5,6 +5,7 @@
 }
 
 .hoverable-border {
-	@apply border;
+	@apply border-2;
 	@apply hover:border-neutral-400;
+	transition: border-color ease-in-out 50ms;
 }

@@ -7,11 +7,13 @@
 
 <div class="ad-grid">
 	{#each ads as ad}
-		<div>
+		<a href={`/ad/${ad.id}`}>
 			<CenterSquareImg url={ad.imgs[0]?.url} />
-			<h2 class="font-semibold text-lg mt-2 mb-1">{ad.title}</h2>
-			<p>{ad.description}</p>
-		</div>
+			<div class="flex justify-between mt-2 text-lg">
+				<h2 class="line-clamp-2">{ad.title}</h2>
+				<p class="font-semibold">{ad.price}</p>
+			</div>
+		</a>
 	{/each}
 </div>
 

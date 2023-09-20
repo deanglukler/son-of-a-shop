@@ -4,11 +4,11 @@
 	import _ from 'lodash';
 
 	import { Timestamp, collection, doc, getDocs, setDoc } from 'firebase/firestore';
-	import Button from '$lib/components/Button.svelte';
 	import CenterSquareImg from '$lib/components/CenterSquareImg.svelte';
 	import type { AdParsedWithId } from '$lib/types';
 	import { safelyParseAd } from '$lib/safelyParseAd';
 	import { getDownloadURL, listAll, ref } from 'firebase/storage';
+	import AddOutline from '../../lib/icons/AddOutline.svelte';
 
 	type AdParsedWithIdAndImg = AdParsedWithId & { imgUrl: string };
 
@@ -53,9 +53,15 @@
 	}
 </script>
 
+<div class="pb-14">
+	<button class="text-xl hoverable-border p-6 rounded-sm" on:click={handleNewAdOnClick}
+		><div style:display="inline-block" class="h-6 w-6 align-text-bottom"><AddOutline /></div>
+		New Ad</button
+	>
+</div>
 <div class="mb-10">
 	<h2 class="heading-gray mb-3">Ads</h2>
-	<div class="ad-grid">
+	<div class="ad-grid text-xl">
 		{#each adsData as ad}
 			<a href={`edit/${ad.id}`}
 				><div>
@@ -66,8 +72,6 @@
 		{/each}
 	</div>
 </div>
-
-<Button onClick={handleNewAdOnClick}>New Ad</Button>
 
 <style lang="scss">
 	.ad-grid {

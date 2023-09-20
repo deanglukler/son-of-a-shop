@@ -1,6 +1,6 @@
 import { getDownloadURL } from 'firebase-admin/storage';
 import { database, storage } from '../lib/fiBaseAdmin';
-import type { AdParsed, AdParsedWithId, PartialWithFiBaseTimestamps, SavedImg } from '../lib/types';
+import type { AdParsed, AdWithAllData, PartialWithFiBaseTimestamps } from '../lib/types';
 import { safelyParseAd } from '$lib/safelyParseAd';
 import { getImgUrlAndDims } from '../lib/getImgUrlAndDims';
 
@@ -14,10 +14,6 @@ export async function load() {
 	const [imgsFiles] = await bucket.getFiles({ prefix: 'junk' });
 	const dlUrlPromises = imgsFiles.map((img) => getDownloadURL(img));
 	const dlUrls = await Promise.all(dlUrlPromises);
-
-	type AdWithAllData = AdParsedWithId & {
-		imgs: SavedImg[];
-	};
 
 	const adsWithAllData: AdWithAllData[] = [];
 	ads.forEach((ad) => {

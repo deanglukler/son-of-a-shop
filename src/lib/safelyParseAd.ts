@@ -4,6 +4,7 @@ export function safelyParseAd(firestoreAd: PartialWithFiBaseTimestamps<AdParsed>
 	return {
 		title: firestoreAd.title || '',
 		description: firestoreAd.description || '',
+		price: firestoreAd.price || '',
 		createdAtMilis: firestoreAd.createdAt.toMillis(),
 		updatedAtMilis: firestoreAd.updatedAt.toMillis()
 	};
