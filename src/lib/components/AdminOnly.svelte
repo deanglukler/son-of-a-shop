@@ -1,84 +1,46 @@
 <script lang="ts">
-	import { initFiBase, app, database, auth } from '$lib/fiBase';
-	import { userUid } from '$lib/stores';
-	import {
-		GoogleAuthProvider,
-		getRedirectResult,
-		onAuthStateChanged,
-		signInWithRedirect,
-		signOut
-	} from 'firebase/auth';
+	import { database } from '$lib/fiBase';
 	import { doc, getDoc } from 'firebase/firestore';
 	import { onMount } from 'svelte';
-	import toast from '$lib/toast';
+	import { getUser, handleSignIn } from '../stores';
 	import Button from './Button.svelte';
 
-	let handleSignIn = () => {};
-	let handleSignOut = () => {};
+	let isAdmin = false;
 
 	let isMounted = false;
-	onMount(async () => {
-		initFiBase();
-
-		handleSignIn = () => signInWithRedirect(auth, new GoogleAuthProvider());
-		handleSignOut = () =>
-			signOut(auth).catch((error) => {
-				toast.error('Sign out failed.  Try again.');
-			});
-
-		getRedirectResult(auth).catch((error) => {
-			toast.error('Error in getRedirectResult');
-			// Handle Errors here.
-			const errorCode = error.code;
-			const errorMessage = error.message;
-			// The email of the user's account used.
-			const email = error.customData?.email;
-			// The AuthCredential type that was used.
-			const credential = GoogleAuthProvider.credentialFromError(error);
-			// ...
-			throw error;
-		});
-
-		onAuthStateChanged(auth, (user) => {
-			if (user) {
-				// User is signed in, see docs for a list of available properties
-				// https://firebase.google.com/docs/reference/js/auth.user
-				const uid = user.uid;
-				$userUid = uid;
-			} else {
-				$userUid = '';
-			}
-		});
-
+	onMount(() => {
 		isMounted = true;
 	});
 
-	let isAdmin = false;
 	$: {
 		const isAdminCheck = async () => {
 			console.log('isAdmin: Checking if isAdmin...');
-			if ($userUid) {
-				const docRef = doc(database, 'admins', $userUid);
-				const docSnap = await getDoc(docRef);
-				if (docSnap.exists()) {
-					const d = docSnap.data();
-					if (d.isAdmin) {
-						console.log('isAdmin: True');
-						return true;
-					} else {
-						console.log('isAdmin: False, user exist in database but property isAdmin: false');
-						return false;
-					}
+
+			const user = $getUser();
+
+			if (!user) {
+				console.log('isAdmin false, no user');
+				return false;
+			}
+
+			const docRef = doc(database, 'admins', user.uid);
+			const docSnap = await getDoc(docRef);
+			if (docSnap.exists()) {
+				const d = docSnap.data();
+				if (d.isAdmin) {
+					console.log('isAdmin: True');
+					return true;
 				} else {
-					console.log('isAdmin: False, document for userUid: ' + $userUid + ' doesnt exist');
+					console.log('isAdmin: False, user exist in database but property isAdmin: false');
 					return false;
 				}
 			} else {
-				console.log('isAdmin: False, no $userUid');
+				console.log('isAdmin: False, document for userUid: ' + user.uid + ' doesnt exist');
 				return false;
 			}
-			return false;
+			return false; // for safety
 		};
+
 		const updateIsAdmin = async () => {
 			isAdmin = await isAdminCheck();
 		};
@@ -91,15 +53,8 @@
 {#if isAdmin}
 	<slot />
 {:else}
-	<h2>not authorized</h2>
-{/if}
-
-<div class="flex justify-end items-start h-40 flex-col">
-	{#if $userUid}
-		<Button on:click={handleSignOut}>sign out</Button>
-	{:else}
-		<Button on:click={handleSignIn}>Sign in</Button>
+	<h2>Not Authorized</h2>
+	{#if !$getUser()}
+		<Button onClick={$handleSignIn}>Sign In</Button>
 	{/if}
-
-	<h3>{$userUid}</h3>
-</div>
+{/if}

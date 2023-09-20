@@ -1,8 +1,6 @@
 <script lang="ts">
-	import { onAuthStateChanged } from 'firebase/auth';
 	import { onMount } from 'svelte';
-	import { initFiBase, auth, database, storage } from '$lib/fiBase';
-	import { userUid } from '$lib/stores';
+	import { database, storage } from '$lib/fiBase';
 	import _ from 'lodash';
 
 	import { Timestamp, collection, doc, getDocs, setDoc } from 'firebase/firestore';
@@ -16,19 +14,6 @@
 
 	let adsData: AdParsedWithIdAndImg[] = [];
 	onMount(async () => {
-		initFiBase();
-
-		onAuthStateChanged(auth, (user) => {
-			if (user) {
-				// User is signed in, see docs for a list of available properties
-				// https://firebase.google.com/docs/reference/js/auth.user
-				const uid = user.uid;
-				$userUid = uid;
-			} else {
-				$userUid = '';
-			}
-		});
-
 		const ads = await getDocs(collection(database, 'ads'));
 		const nxtAdsData: AdParsedWithId[] = [];
 
