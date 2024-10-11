@@ -1,8 +1,11 @@
 <script lang="ts">
 	import CenterSquareImg from '$lib/components/CenterSquareImg.svelte';
+	import { documentTitleExtension } from '../lib/stores';
 	import type { PageData } from './$types';
 	export let data: PageData;
 	const ads = data.ads;
+
+	$documentTitleExtension = '';
 </script>
 
 <div class="ad-grid">
